@@ -1,0 +1,77 @@
+# ─── Secrets & Environment ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# ─── Backend (Node.js) ───────────────────────────────────────────────────────
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/logs/
+backend/*.log
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/.npm
+backend/coverage/
+backend/*.json
+
+# ─── Frontend (Flutter) ──────────────────────────────────────────────────────
+# Build outputs
+frontend/app/build/
+
+# Flutter/Dart tool files
+frontend/app/.dart_tool/
+frontend/app/.flutter-plugins
+frontend/app/.flutter-plugins-dependencies
+frontend/app/.packages
+frontend/app/pubspec.lock
+
+# IDE
+frontend/app/.idea/
+frontend/app/.vscode/
+frontend/app/*.iml
+
+# Android
+frontend/app/android/.gradle/
+frontend/app/android/local.properties
+frontend/app/android/key.properties
+frontend/app/android/app/google-services.json
+frontend/app/android/app/*.keystore
+frontend/app/android/app/*.jks
+
+# iOS
+frontend/app/ios/Pods/
+frontend/app/ios/.symlinks/
+frontend/app/ios/Flutter/Flutter.framework
+frontend/app/ios/Flutter/Flutter.podspec
+frontend/app/ios/Runner/GoogleService-Info.plist
+
+# macOS
+frontend/app/macos/Pods/
+frontend/app/macos/.symlinks/
+
+# Web
+frontend/app/web/firebase-config.js
+
+# ─── General ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml
+
+# ─── GitHub Actions secrets (never commit these) ─────────────────────────────
+.firebase/
+.firebaserc.local

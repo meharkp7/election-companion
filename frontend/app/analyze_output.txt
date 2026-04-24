@@ -1,0 +1,105 @@
+Analyzing app...                                                
+
+   info • Don't use 'BuildContext's across async gaps • lib/features/booth_intelligence/screens/booth_status_screen.dart:592:28 • use_build_context_synchronously
+warning • The value of the field '_error' isn't used • lib/features/complaints/screens/complaints_screen.dart:20:11 • unused_field
+warning • The value of the field '_currentStep' isn't used • lib/features/document_verification/screens/document_ai_screen.dart:20:7 • unused_field
+   info • Unnecessary use of 'toList' in a spread • lib/features/document_verification/screens/document_ai_screen.dart:205:22 • unnecessary_to_list_in_spreads
+warning • The value of the field '_calendarData' isn't used • lib/features/election_tracker/screens/election_tracker_screen.dart:21:25 • unused_field
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:88:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:102:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:129:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:146:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:241:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:243:60 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:251:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:352:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:355:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:364:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/election_tracker/screens/election_tracker_screen.dart:402:34 • deprecated_member_use
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/election_tracker/screens/election_tracker_screen.dart:466:23 • unnecessary_null_comparison
+   info • Don't use 'BuildContext's across async gaps • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:59:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:152:28 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:209:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:210:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:327:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:346:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:367:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:384:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:421:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:423:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:507:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:510:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/polling_day_kit/screens/polling_day_kit_screen.dart:520:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/ready_to_vote/screens/ready_to_vote_screen.dart:234:24 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/ready_to_vote/screens/ready_to_vote_screen.dart:236:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/ready_to_vote/screens/ready_to_vote_screen.dart:244:30 • deprecated_member_use
+warning • Unused import: '../../../shared/widgets/primary_button.dart' • lib/features/results/screens/election_results_screen.dart:8:8 • unused_import
+warning • Unused import: '../../../shared/components/secondary_button.dart' • lib/features/results/screens/election_results_screen.dart:9:8 • unused_import
+warning • The value of the field '_error' isn't used • lib/features/results/screens/election_results_screen.dart:23:11 • unused_field
+warning • The value of the field '_selectedTab' isn't used • lib/features/results/screens/election_results_screen.dart:24:7 • unused_field
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/results/screens/election_results_screen.dart:44:22 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/results/screens/election_results_screen.dart:45:79 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/results/screens/election_results_screen.dart:46:76 • unnecessary_non_null_assertion
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:112:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:114:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:122:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:168:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:181:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:215:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:224:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:353:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:547:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:550:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:560:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:562:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:764:22 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:766:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/results/screens/election_results_screen.dart:774:28 • deprecated_member_use
+warning • The value of the field '_error' isn't used • lib/features/social/screens/social_features_screen.dart:24:11 • unused_field
+warning • The value of the field '_selectedTab' isn't used • lib/features/social/screens/social_features_screen.dart:25:7 • unused_field
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/social/screens/social_features_screen.dart:46:48 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/social/screens/social_features_screen.dart:50:89 • unnecessary_non_null_assertion
+warning • The operand can't be 'null', so the condition is always 'false' • lib/features/social/screens/social_features_screen.dart:69:62 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/social/screens/social_features_screen.dart:79:19 • unnecessary_non_null_assertion
+   info • Don't use 'BuildContext's across async gaps • lib/features/social/screens/social_features_screen.dart:118:28 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:138:59 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:138:96 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:268:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:330:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:341:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:363:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:371:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:445:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:447:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:455:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:529:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:561:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:612:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:614:61 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:751:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:751:86 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/social/screens/social_features_screen.dart:844:33 • deprecated_member_use
+warning • The value of the field '_emergencyScenarios' isn't used • lib/features/voter_rights/screens/voter_rights_screen.dart:22:17 • unused_field
+warning • The value of the field '_selectedTab' isn't used • lib/features/voter_rights/screens/voter_rights_screen.dart:24:7 • unused_field
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:123:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:125:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:229:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:231:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:322:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:324:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:332:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:407:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:447:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:558:59 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:587:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:590:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voter_rights/screens/voter_rights_screen.dart:600:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voting_day/screens/voting_day_screen.dart:435:24 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/voting_day/screens/voting_day_screen.dart:437:43 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/services/features_api_service.dart:251:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/features_api_service.dart:274:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/new_features_api_service.dart:409:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/new_features_api_service.dart:432:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/new_features_api_service.dart:455:7 • avoid_print
+
+101 issues found. (ran in 1.2s)
