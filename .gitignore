@@ -75,3 +75,6 @@ Thumbs.db
 # ─── GitHub Actions secrets (never commit these) ─────────────────────────────
 .firebase/
 .firebaserc.local
+
+.claude/skills/
+.agent/skills.
