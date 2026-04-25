@@ -111,7 +111,7 @@ class _DigiLockerVerificationWidgetState
   Widget build(BuildContext context) {
     return AccessibleCard(
       label: 'DigiLocker Verification',
-      backgroundColor: AppColors.blue.withOpacity(0.05),
+      backgroundColor: AppColors.blue.withValues(alpha: 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -121,7 +121,7 @@ class _DigiLockerVerificationWidgetState
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.blue.withOpacity(0.15),
+                  color: AppColors.blue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -197,7 +197,7 @@ class _DigiLockerVerificationWidgetState
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.green.withOpacity(0.1),
+            color: AppColors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -239,9 +239,9 @@ class _DigiLockerVerificationWidgetState
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.green.withOpacity(0.1),
+            color: AppColors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.green.withOpacity(0.3)),
+            border: Border.all(color: AppColors.green.withValues(alpha: 0.3)),
           ),
           child: Column(
             children: [

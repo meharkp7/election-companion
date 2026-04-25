@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/colors.dart';
-import '../../../providers/user_provider.dart';
 import '../../../services/features_api_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -36,7 +35,6 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
 
   Future<void> _loadData() async {
     try {
-      final user = ref.read(userProvider).value;
       final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
 
       if (firebaseUid == null) {
@@ -63,7 +61,6 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
     try {
       setState(() => _isLoading = true);
 
-      final user = ref.read(userProvider).value;
       final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
 
       if (firebaseUid == null) {
@@ -148,7 +145,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
             decoration: BoxDecoration(
               color: AppColors.redLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -187,7 +184,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.ink.withOpacity(0.8),
+              color: AppColors.ink.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 12),
@@ -236,7 +233,10 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
   Widget _buildTemplateCard(Map<String, dynamic> template) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        label: '${template['title'] ?? 'Complaint'}. ${template['description'] ?? ''}. Tap to view details or file.',
+        child: InkWell(
         onTap: () => _showComplaintDetails(template),
         borderRadius: BorderRadius.circular(16),
         child: Container(
@@ -246,7 +246,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.ink.withOpacity(0.05),
+                color: AppColors.ink.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -275,7 +275,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                       template['description'] ?? '',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.ink.withOpacity(0.6),
+                        color: AppColors.ink.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -295,7 +295,8 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
             ],
           ),
         ),
-      ),
+      ), // InkWell
+      ), // Semantics
     );
   }
 
@@ -339,7 +340,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                   time,
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.ink.withOpacity(0.6),
+                    color: AppColors.ink.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -363,7 +364,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.ink.withOpacity(0.6),
+                color: AppColors.ink.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 8),
@@ -371,7 +372,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
               'Tap "New Complaint" to file a grievance',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.ink.withOpacity(0.4),
+                color: AppColors.ink.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -393,14 +394,20 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
     final status = complaint['status'] ?? 'submitted';
     final statusColor = _getStatusColor(status);
     final statusIcon = _getStatusIcon(status);
+    final a11yLabel = '${_formatComplaintType(complaint['complaintType'])}. '
+        'Status: ${status.toUpperCase()}. '
+        'Reference: ${complaint['eciReferenceNumber'] ?? 'N/A'}. '
+        'Filed: ${_formatDate(complaint['createdAt'])}.';
 
-    return Container(
+    return Semantics(
+      label: a11yLabel,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +418,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -435,7 +442,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                 style: TextStyle(
                   fontSize: 12,
                   fontFamily: 'monospace',
-                  color: AppColors.ink.withOpacity(0.6),
+                  color: AppColors.ink.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -455,7 +462,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.ink.withOpacity(0.7),
+              color: AppColors.ink.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 12),
@@ -466,7 +473,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                 'Filed: ${_formatDate(complaint['createdAt'])}',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.ink.withOpacity(0.5),
+                  color: AppColors.ink.withValues(alpha: 0.5),
                 ),
               ),
               if (complaint['priority'] == 'high' ||
@@ -475,7 +482,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -491,6 +498,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
           ),
         ],
       ),
+      ), // Semantics
     );
   }
 
@@ -571,7 +579,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                   template['description'],
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.ink.withOpacity(0.7),
+                    color: AppColors.ink.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -670,7 +678,7 @@ class _ComplaintsScreenState extends ConsumerState<ComplaintsScreen>
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.ink.withOpacity(0.6),
+                    color: AppColors.ink.withValues(alpha: 0.6),
                   ),
                 ),
               ],

@@ -196,7 +196,7 @@ extension ColorWithValues on Color {
 
   /// Returns color with specific opacity value (0.0-1.0)
   Color withOpacityValue(double opacity) {
-    return withOpacity(opacity);
+    return withValues(alpha: opacity);
   }
 }
 

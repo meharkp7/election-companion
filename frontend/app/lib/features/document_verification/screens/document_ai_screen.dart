@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/colors.dart';
-import '../../../providers/user_provider.dart';
 import '../../../services/features_api_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -27,7 +26,6 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
 
   Future<void> _validateDocuments() async {
     try {
-      final user = ref.read(userProvider).value;
       final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
 
       if (firebaseUid == null) {
@@ -77,7 +75,7 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.ink.withOpacity(0.8),
+              color: AppColors.ink.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 24),
@@ -101,13 +99,19 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Container(
+          Semantics(
+            header: true,
+            liveRegion: true,
+            label: allValid
+                ? 'Document check complete. All documents valid. Ready for booth visit.'
+                : 'Document check complete. Action required. Some documents need attention.',
+            child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: allValid
-                    ? [AppColors.green, AppColors.green.withOpacity(0.8)]
-                    : [Colors.orange, Colors.orange.withOpacity(0.8)],
+                    ? [AppColors.green, AppColors.green.withValues(alpha: 0.8)]
+                    : [Colors.orange, Colors.orange.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -136,13 +140,13 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
                       : 'Some documents need attention before you visit the polling booth.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
                   ),
                 ),
               ],
             ),
-          ),
+          ), // Semantics header
           const SizedBox(height: 24),
 
           // Document status cards
@@ -166,9 +170,9 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,108 +252,115 @@ class _DocumentAIScreenState extends ConsumerState<DocumentAIScreen> {
     final warning = result['warning'] as String?;
     final issues = result['issues'] as List<dynamic>? ?? [];
     final confidence = result['confidence'] as num?;
+    final a11yLabel = '$title: ${canProceed ? 'Valid' : 'Issues found'}.'
+        '${confidence != null ? ' Confidence: ${(confidence * 100).toStringAsFixed(0)}%.' : ''}'
+        '${warning != null ? ' Warning: $warning.' : ''}'
+        '${issues.isNotEmpty ? ' Issues: ${issues.join(', ')}.' : ''}';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: canProceed ? AppColors.green : Colors.orange,
-          width: 2,
+    return Semantics(
+      label: a11yLabel,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: canProceed ? AppColors.green : Colors.orange,
+            width: 2,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color),
                 ),
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (confidence != null)
+                        Text(
+                          'Confidence: ${(confidence * 100).toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.ink.withValues(alpha: 0.6),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: canProceed
+                        ? AppColors.green.withValues(alpha: 0.1)
+                        : Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    canProceed ? '✅ Valid' : '⚠️ Issues',
+                    style: TextStyle(
+                      color: canProceed ? AppColors.green : Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (warning != null || issues.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (confidence != null)
+                    if (warning != null)
                       Text(
-                        'Confidence: ${(confidence * 100).toStringAsFixed(0)}%',
+                        '⚠️ $warning',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.ink.withOpacity(0.6),
+                          fontSize: 13,
+                          color: Colors.orange[800],
                         ),
                       ),
+                    ...issues.map((issue) => Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            '• $issue',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.orange[700],
+                            ),
+                          ),
+                        )),
                   ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: canProceed
-                      ? AppColors.green.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  canProceed ? '✅ Valid' : '⚠️ Issues',
-                  style: TextStyle(
-                    color: canProceed ? AppColors.green : Colors.orange,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
                 ),
               ),
             ],
           ),
-          if (warning != null || issues.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (warning != null)
-                    Text(
-                      '⚠️ $warning',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.orange[800],
-                      ),
-                    ),
-                  ...issues.map((issue) => Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '• $issue',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.orange[700],
-                          ),
-                        ),
-                      )),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+        ),
+      ), // Container
+    ); // Semantics
   }
 }

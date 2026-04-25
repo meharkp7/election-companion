@@ -1,13 +1,5 @@
 const { Pool } = require('pg');
 
-// Debug ENV (remove later)
-console.log("ENV CHECK:", {
-  DB_HOST: process.env.DB_HOST,
-  DB_PORT: process.env.DB_PORT,
-  DB_USER: process.env.DB_USER,
-  DB_PASSWORD_SET: !!process.env.DB_PASSWORD,
-});
-
 // PostgreSQL connection pool
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',

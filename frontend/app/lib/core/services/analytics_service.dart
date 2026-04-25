@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -412,17 +414,44 @@ class AnalyticsService {
   }
 
   Future<void> _sendEvents(List<AnalyticsEvent> events) async {
-    // In a real implementation, send to analytics service
-    // like Firebase Analytics, Mixpanel, Amplitude, or custom endpoint
+    final fa = FirebaseAnalytics.instance;
 
-    if (kDebugMode) {
-      for (final event in events) {
-        print('ANALYTICS: ${event.toJson()}');
+    for (final event in events) {
+      try {
+        switch (event.type) {
+          case AnalyticsEventType.screenView:
+            await fa.logScreenView(
+              screenName: event.parameters['screen_name']?.toString() ?? event.name,
+            );
+          case AnalyticsEventType.appOpen:
+            await fa.logAppOpen();
+          case AnalyticsEventType.error:
+            // Also forward to Crashlytics as a non-fatal
+            FirebaseCrashlytics.instance.recordError(
+              event.parameters['error'] ?? event.name,
+              null,
+              reason: event.name,
+              fatal: false,
+            );
+            await fa.logEvent(name: 'app_error', parameters: {
+              'error_message': event.parameters['error']?.toString() ?? '',
+            });
+          default:
+            // Sanitise: Firebase Analytics only allows a-z, 0-9, _ and max 40 chars
+            final safeName = event.name
+                .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_')
+                .toLowerCase()
+                .substring(0, event.name.length.clamp(0, 40));
+            final safeParams = <String, Object>{};
+            event.parameters.forEach((k, v) {
+              if (v != null) safeParams[k] = v.toString();
+            });
+            await fa.logEvent(name: safeName, parameters: safeParams);
+        }
+      } catch (e) {
+        if (kDebugMode) print('Analytics send error: $e');
       }
     }
-
-    // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 100));
   }
 
   void _startPeriodicFlush() {

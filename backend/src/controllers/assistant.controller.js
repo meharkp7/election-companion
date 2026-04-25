@@ -1,6 +1,8 @@
 const UserModel = require('../models/user.model');
 const { transition } = require('../services/stateMachine.service');
 const { isElectionDay } = require('../services/election.service');
+const { logVoterEvent } = require('../services/bigquery.service');
+const { log } = require('../services/cloudLogging.service');
 
 // POST /api/assistant/next-step
 const nextStep = async (req, res, next) => {
@@ -29,6 +31,23 @@ const nextStep = async (req, res, next) => {
     }
 
     const result = await transition(user.id, input);
+
+    // Log state transition to BigQuery for analytics
+    logVoterEvent(firebaseUid, `state_${result.currentState.toLowerCase()}`, {
+      state: result.user?.state,
+      age: result.user?.age,
+      isFirstTimeVoter: result.user?.isFirstTimeVoter,
+      currentState: result.currentState,
+      readinessScore: result.user?.readinessScore,
+    }).catch(() => {}); // fire-and-forget
+
+    // Log to Cloud Logging for operational visibility
+    log.info('state_transition', {
+      firebaseUid,
+      from: result.previousState,
+      to: result.currentState,
+      readinessScore: result.user?.readinessScore,
+    }).catch(() => {});
 
     const uiPayload = buildUIPayload({
       currentState: result.currentState,

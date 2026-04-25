@@ -1,4 +1,5 @@
 const admin = require('../config/firebase');
+const { log } = require('../services/cloudLogging.service');
 
 const verifyFirebaseToken = async (req, res, next) => {
   // Development bypass for emulator/local testing without Firebase setup
@@ -13,6 +14,7 @@ const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
+      log.security('missing_auth_token', { path: req.path, ip: req.ip });
       return res.status(401).json({ message: 'No token provided' });
     }
     const token = authHeader.split('Bearer ')[1];
@@ -20,6 +22,7 @@ const verifyFirebaseToken = async (req, res, next) => {
     req.user = decoded; // uid, phone_number, etc.
     next();
   } catch (err) {
+    log.security('invalid_auth_token', { path: req.path, ip: req.ip, error: err.message });
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };

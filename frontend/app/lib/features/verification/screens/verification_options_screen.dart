@@ -36,7 +36,7 @@ class VerificationOptionsScreen extends ConsumerWidget {
                 'Select how you want to verify your voter identity. All methods are secure and government-approved.',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.ink.withOpacity(0.7),
+                  color: AppColors.ink.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 32),
@@ -132,7 +132,13 @@ class _VerificationOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final semanticLabel = badge != null
+        ? '$title. $subtitle. $description. $badge.'
+        : '$title. $subtitle. $description.';
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -142,13 +148,13 @@ class _VerificationOptionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: badge != null
-                ? (badgeColor ?? AppColors.orange).withOpacity(0.3)
+                ? (badgeColor ?? AppColors.orange).withValues(alpha: 0.3)
                 : AppColors.border,
             width: badge != null ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.ink.withOpacity(0.05),
+              color: AppColors.ink.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -188,7 +194,7 @@ class _VerificationOptionCard extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.ink.withOpacity(0.6),
+                          color: AppColors.ink.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -202,7 +208,7 @@ class _VerificationOptionCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: (badgeColor ?? AppColors.orange)
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -221,7 +227,7 @@ class _VerificationOptionCard extends StatelessWidget {
               description,
               style: TextStyle(
                 fontSize: 13,
-                color: AppColors.ink.withOpacity(0.7),
+                color: AppColors.ink.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 12),
@@ -245,6 +251,7 @@ class _VerificationOptionCard extends StatelessWidget {
               ],
             ),
           ],
+          ),
         ),
       ),
     );

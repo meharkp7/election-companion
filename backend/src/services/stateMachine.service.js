@@ -106,12 +106,6 @@ const transition = async (userId, input) => {
   const user = await UserModel.findById(userId);
   if (!user) throw new Error('User not found');
 
-  console.log('🔍 TRANSITION DEBUG:', {
-    userId,
-    currentState: user.currentState,
-    input,
-  });
-
   try {
     const result = getNextState(user.currentState, input);
     const fromState = user.currentState;

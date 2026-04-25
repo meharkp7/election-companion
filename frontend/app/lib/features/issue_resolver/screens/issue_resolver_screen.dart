@@ -30,7 +30,11 @@ class IssueResolverScreen extends ConsumerWidget {
               for (final i in _Issue.values)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: StepOptionCard(
+                  child: Semantics(
+                    button: true,
+                    selected: i == issue,
+                    label: '${i.label}${i == issue ? ', currently selected' : ''}',
+                    child: StepOptionCard(
                     label: i.label,
                     icon: i == issue
                         ? Icons.radio_button_checked
@@ -38,7 +42,8 @@ class IssueResolverScreen extends ConsumerWidget {
                     accentColor: i == issue ? AppColors.orange : AppColors.ink3,
                     onTap: () =>
                         context.go(AppRoutes.issueResolver, extra: i.key),
-                  ),
+                  ), // StepOptionCard
+                  ), // Semantics
                 ),
               const SizedBox(height: 24),
 
@@ -96,14 +101,14 @@ class IssueResolverScreen extends ConsumerWidget {
                   title: issue.formTitle,
                   subtitle: issue.formDesc,
                   bgColor: AppColors.blueLight,
-                  borderColor: AppColors.blue.withOpacity(.15),
+                  borderColor: AppColors.blue.withValues(alpha: .15),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.blue.withOpacity(.12),
+                      color: AppColors.blue.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(

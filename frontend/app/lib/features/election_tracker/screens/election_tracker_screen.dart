@@ -20,7 +20,6 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
   bool _isLoading = true;
   Map<String, dynamic>? _phasesData;
   Map<String, dynamic>? _turnoutData;
-  Map<String, dynamic>? _calendarData;
   String? _error;
   late TabController _tabController;
 
@@ -47,14 +46,11 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
           await NewFeaturesApiService.getElectionPhases(user.firebaseUid!);
       final turnout =
           await NewFeaturesApiService.getLiveTurnout(user.firebaseUid!);
-      final calendar =
-          await NewFeaturesApiService.getUserCalendar(user.firebaseUid!);
 
       if (mounted) {
         setState(() {
           _phasesData = phases;
           _turnoutData = turnout;
-          _calendarData = calendar;
           _isLoading = false;
         });
       }
@@ -71,6 +67,48 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const Scaffold(body: AppLoader());
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Election Tracker')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 56, color: AppColors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'Could not load election data',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Check your connection and try again.',
+                  style: TextStyle(fontSize: 14, color: AppColors.ink3),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: _loadData,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -191,8 +229,24 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
 
   // --- PAGE 3: MY DATES ---
   Widget _buildMyDatesPage() {
-    final cal = _calendarData ?? {};
-    final state = ref.read(userProvider).value?.state ?? 'Your State';
+        final state = ref.read(userProvider).value?.state ?? 'Your State';
+    final phases = (_phasesData?['phases'] as List<dynamic>?) ?? [];
+
+    // Build timeline from real phase data when available
+    final timelineItems = phases.isNotEmpty
+        ? phases
+            .map<Map<String, dynamic>>((p) => {
+                  'label': 'Phase ${p['phaseNumber']} Polling',
+                  'date': _formatDate(p['pollingDate']?.toString()),
+                  'isDone': p['status'] == 'completed',
+                })
+            .toList()
+        : [
+            {'label': 'Nomination Deadline', 'date': 'Jan 15, 2025', 'isDone': true},
+            {'label': 'Withdrawal Date', 'date': 'Jan 18, 2025', 'isDone': true},
+            {'label': 'Polling Day', 'date': 'Feb 05, 2025', 'isDone': false},
+            {'label': 'Results Day', 'date': 'Feb 08, 2025', 'isDone': false},
+          ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -202,9 +256,9 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.orange.withOpacity(0.05),
+              color: AppColors.orange.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.orange.withOpacity(0.2)),
+              border: Border.all(color: AppColors.orange.withValues(alpha: 0.2)),
             ),
             child: Column(
               children: [
@@ -219,16 +273,33 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildTimelineItem('Nomination Deadline', 'Jan 15, 2025', true),
-                _buildTimelineItem('Withdrawal Date', 'Jan 18, 2025', true),
-                _buildTimelineItem('Polling Day', 'Feb 05, 2025', false),
-                _buildTimelineItem('Results Day', 'Feb 08, 2025', false),
+                ...timelineItems.map(
+                  (item) => _buildTimelineItem(
+                    item['label'] as String,
+                    item['date'] as String,
+                    item['isDone'] as bool,
+                  ),
+                ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(String? raw) {
+    if (raw == null) return 'TBD';
+    try {
+      final dt = DateTime.parse(raw);
+      const months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+    } catch (_) {
+      return raw;
+    }
   }
 
   // --- WIDGET HELPERS ---
@@ -246,7 +317,7 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.orange.withOpacity(0.3),
+            color: AppColors.orange.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -303,7 +374,7 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.orange.withOpacity(0.1),
+              color: AppColors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: AppColors.orange),
@@ -330,9 +401,9 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -347,7 +418,9 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
   }
 
   Widget _buildTimelineItem(String label, String date, bool isDone) {
-    return Padding(
+    return Semantics(
+      label: '$label: $date. ${isDone ? 'Completed' : 'Upcoming'}',
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
@@ -365,7 +438,8 @@ class _ElectionTrackerScreenState extends ConsumerState<ElectionTrackerScreen>
           Text(date, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
-    );
+    ), // Padding
+    ); // Semantics
   }
 
   Widget _buildNewsItem(String text) {
@@ -394,7 +468,9 @@ class _PhaseItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: 'Phase ${phase['phaseNumber']}: ${phase['totalSeats']} seats, February 5, 2025',
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -419,6 +495,7 @@ class _PhaseItem extends StatelessWidget {
                   color: AppColors.orange, fontWeight: FontWeight.bold)),
         ],
       ),
+      ), // Semantics
     );
   }
 }

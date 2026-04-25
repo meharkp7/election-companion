@@ -52,7 +52,7 @@ class ResultsScreen extends ConsumerWidget {
                         AppStrings.constituencyLabel,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(.5),
+                          color: Colors.white.withValues(alpha: .5),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -99,7 +99,7 @@ class ResultsScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: c.isWinner
-                              ? AppColors.green.withOpacity(.3)
+                              ? AppColors.green.withValues(alpha: .3)
                               : AppColors.border,
                           width: c.isWinner ? 1 : 0.5,
                         ),
@@ -191,7 +191,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
+        color: color.withValues(alpha: .15),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -208,7 +208,7 @@ class _StatChip extends StatelessWidget {
           ),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: color.withOpacity(.8)),
+            style: TextStyle(fontSize: 11, color: color.withValues(alpha: .8)),
           ),
         ],
       ),

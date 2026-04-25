@@ -49,7 +49,7 @@ class VerificationScreen extends ConsumerWidget {
                       color: AppColors.amberLight,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: AppColors.amber.withOpacity(.2),
+                        color: AppColors.amber.withValues(alpha: .2),
                         width: 0.5,
                       ),
                     ),
@@ -103,7 +103,7 @@ class VerificationScreen extends ConsumerWidget {
                     subtitle:
                         'Electors Photo Identity Card number — printed on your Voter ID',
                     bgColor: AppColors.blueLight,
-                    borderColor: AppColors.blue.withOpacity(.15),
+                    borderColor: AppColors.blue.withValues(alpha: .15),
                   ),
                   const SizedBox(height: 28),
 
@@ -192,7 +192,9 @@ class _VerifyStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: 'Step $number: $title. $subtitle',
+      child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -241,6 +243,7 @@ class _VerifyStep extends StatelessWidget {
           ),
         ],
       ),
+    ), // Semantics
     );
   }
 }

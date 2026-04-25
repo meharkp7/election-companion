@@ -124,7 +124,11 @@ class _ElectionAssistantScreenState
         title: const Text('Election AI Assistant'),
         elevation: 0,
       ),
-      body: Column(
+      body: Semantics(
+        scopesRoute: true,
+        namesRoute: true,
+        label: 'Election AI Assistant chat screen',
+        child: Column(
         children: [
           Expanded(
             child: ListView.builder(
@@ -143,22 +147,26 @@ class _ElectionAssistantScreenState
             ),
           ),
           if (_isTyping)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  SizedBox(width: 12),
-                  Text('Assistant is thinking...',
-                      style: TextStyle(fontSize: 12)),
-                ],
+            Semantics(
+              liveRegion: true,
+              label: 'Assistant is thinking, please wait',
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 12),
+                    Text('Assistant is thinking...',
+                        style: TextStyle(fontSize: 12)),
+                  ],
+                ),
               ),
             ),
-          if (_messages.length == 1) ...[
+          if (_messages.length == 1 || (_messages.isNotEmpty && _messages.last['role'] == 'assistant')) ...[
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -178,7 +186,7 @@ class _ElectionAssistantScreenState
               color: AppColors.card,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -188,28 +196,39 @@ class _ElectionAssistantScreenState
               child: Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: 'Ask anything about voting...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
+                    child: Semantics(
+                      textField: true,
+                      label: 'Ask a question about voting',
+                      hint: 'Type and press send or press Enter',
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: 'Ask anything about voting...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
                         ),
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+                        onSubmitted: _handleSend,
+                        textInputAction: TextInputAction.send,
                       ),
-                      onSubmitted: _handleSend,
                     ),
                   ),
                   const SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor: AppColors.orange,
-                    child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: () => _handleSend(_controller.text),
+                  Semantics(
+                    button: true,
+                    label: 'Send message',
+                    child: CircleAvatar(
+                      backgroundColor: AppColors.orange,
+                      child: IconButton(
+                        icon: const Icon(Icons.send, color: Colors.white),
+                        onPressed: () => _handleSend(_controller.text),
+                        tooltip: 'Send',
+                      ),
                     ),
                   ),
                 ],
@@ -217,7 +236,8 @@ class _ElectionAssistantScreenState
             ),
           ),
         ],
-      ),
+      ), // Column
+      ), // Semantics scopesRoute
     );
   }
 }
@@ -235,49 +255,57 @@ class _ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isUser ? AppColors.orange : AppColors.card,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
-          ),
-          border: isUser ? null : Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                color: isUser ? Colors.white : AppColors.ink,
-                fontSize: 14,
-              ),
+    final role = isUser ? 'You' : 'Assistant';
+    return Semantics(
+      label: '$role: $text',
+      // liveRegion on assistant bubbles so TalkBack announces new replies
+      liveRegion: !isUser,
+      child: Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          constraints:
+              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isUser ? AppColors.orange : AppColors.card,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(isUser ? 16 : 4),
+              bottomRight: Radius.circular(isUser ? 4 : 16),
             ),
-            if (actions != null && actions!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                children: actions!
-                    .map((a) => ActionChip(
-                          label: Text(a.toString(),
-                              style: const TextStyle(fontSize: 10)),
-                          onPressed: () {
-                            // Handle action
-                          },
-                        ))
-                    .toList(),
+            border: isUser ? null : Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : AppColors.ink,
+                  fontSize: 14,
+                ),
               ),
+              if (actions != null && actions!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: actions!
+                      .map((a) => Semantics(
+                            button: true,
+                            label: 'Quick action: ${a.toString()}',
+                            child: ActionChip(
+                              label: Text(a.toString(),
+                                  style: const TextStyle(fontSize: 10)),
+                              onPressed: () {},
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -294,11 +322,15 @@ class _QuickQuestionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ActionChip(
-        label: Text(label),
-        onPressed: onTap,
-        backgroundColor: AppColors.card,
-        labelStyle: const TextStyle(fontSize: 12, color: AppColors.ink),
+      child: Semantics(
+        button: true,
+        label: 'Quick question: $label',
+        child: ActionChip(
+          label: Text(label),
+          onPressed: onTap,
+          backgroundColor: AppColors.card,
+          labelStyle: const TextStyle(fontSize: 12, color: AppColors.ink),
+        ),
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/colors.dart';
-import '../../../providers/user_provider.dart';
 import '../../../services/features_api_service.dart';
 
 /// Candidate Intelligence Screen
@@ -28,7 +27,6 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
 
   Future<void> _loadCandidates() async {
     try {
-      final user = ref.read(userProvider).value;
       final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
 
       if (firebaseUid == null) {
@@ -85,7 +83,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.ink.withOpacity(0.8),
+              color: AppColors.ink.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 8),
@@ -121,7 +119,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.orange, AppColors.orange.withOpacity(0.8)],
+              colors: [AppColors.orange, AppColors.orange.withValues(alpha: 0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -135,7 +133,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -161,7 +159,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
               Text(
                 state,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 16,
                 ),
               ),
@@ -169,7 +167,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
               Text(
                 '${candidates.length} Candidates • Compare backgrounds, track records, and integrity',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 13,
                 ),
               ),
@@ -189,7 +187,11 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
               final candidate = candidates[index];
               final isSelected = index == _selectedCandidateIndex;
 
-              return GestureDetector(
+              return Semantics(
+                button: true,
+                selected: isSelected,
+                label: '${candidate['party'] ?? 'Independent'} candidate${isSelected ? ', currently selected' : ''}',
+                child: GestureDetector(
                 onTap: () => setState(() => _selectedCandidateIndex = index),
                 child: Container(
                   width: 80,
@@ -223,8 +225,8 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                     ],
                   ),
                 ),
-              );
-            },
+              ), // GestureDetector
+            ), // Semantics
           ),
         ),
 
@@ -286,7 +288,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                       '$party • $age years',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.ink.withOpacity(0.6),
+                        color: AppColors.ink.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -302,7 +304,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
             decoration: BoxDecoration(
               color: AppColors.blueLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.blue.withOpacity(0.3)),
+              border: Border.all(color: AppColors.blue.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +328,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                   aiSummary,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.ink.withOpacity(0.8),
+                    color: AppColors.ink.withValues(alpha: 0.8),
                     height: 1.5,
                   ),
                 ),
@@ -391,7 +393,10 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
+                child: Semantics(
+                  button: true,
+                  label: 'View full profile of $name',
+                  child: ElevatedButton.icon(
                   onPressed: () => _showFullProfile(candidate),
                   icon: const Icon(Icons.person_outline),
                   label: const Text('Full Profile'),
@@ -401,10 +406,14 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton.icon(
+                child: Semantics(
+                  button: true,
+                  label: 'Add $name to comparison',
+                  child: OutlinedButton.icon(
                   onPressed: () => _addToComparison(candidate['id']),
                   icon: const Icon(Icons.compare_arrows),
                   label: const Text('Compare'),
@@ -413,6 +422,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
                     side: BorderSide(color: AppColors.orange),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+                ),
                 ),
               ),
             ],
@@ -428,9 +438,9 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -448,7 +458,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -466,7 +476,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.ink.withOpacity(0.6),
+            color: AppColors.ink.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 12),
@@ -492,7 +502,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.ink.withOpacity(0.6),
+              color: AppColors.ink.withValues(alpha: 0.6),
             ),
           ),
           Text(
@@ -520,7 +530,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.ink.withOpacity(0.6),
+              color: AppColors.ink.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -529,7 +539,7 @@ class _CandidatesScreenState extends ConsumerState<CandidatesScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.ink.withOpacity(0.4),
+              color: AppColors.ink.withValues(alpha: 0.4),
             ),
           ),
         ],

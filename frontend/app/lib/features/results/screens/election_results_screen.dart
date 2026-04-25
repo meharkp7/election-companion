@@ -110,40 +110,44 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
           _buildTurnoutTab(),
         ],
       ),
-      bottomNavigationBar: Container(
-        height: 40,
-        color: AppColors.ink,
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              color: AppColors.red,
-              alignment: Alignment.center,
-              child: const Text(
-                'LIVE FEED',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                ),
-              ),
-            ),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Counting progress: Centers report steady progress... Results updated... Vote share shifting...',
-                  overflow: TextOverflow.ellipsis,
+      bottomNavigationBar: Semantics(
+        liveRegion: true,
+        label: 'Live feed: Counting progress. Centers report steady progress. Results updated. Vote share shifting.',
+        child: Container(
+          height: 40,
+          color: AppColors.ink,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                color: AppColors.red,
+                alignment: Alignment.center,
+                child: const Text(
+                  'LIVE FEED',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+              const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Counting progress: Centers report steady progress... Results updated... Vote share shifting...',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ), // Container
+      ), // Semantics
     );
   }
 
@@ -190,9 +194,9 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.05),
+        color: statusColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: statusColor.withOpacity(0.1)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -201,7 +205,7 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child:
@@ -263,7 +267,7 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: double.parse(progress.toString()) / 100,
-                backgroundColor: statusColor.withOpacity(0.1),
+                backgroundColor: statusColor.withValues(alpha: 0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                 minHeight: 8,
               ),
@@ -298,7 +302,7 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.green.withOpacity(0.3),
+            color: AppColors.green.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -334,7 +338,7 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
           Text(
             winner['party'] ?? 'Unknown Party',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 16,
             ),
           ),
@@ -343,7 +347,7 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -470,9 +474,9 @@ class _ElectionResultsScreenState extends ConsumerState<ElectionResultsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -594,8 +598,11 @@ class _CandidateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLeading = candidate['status'] == 'leading';
     final isWinner = candidate['status'] == 'won' || candidate['position'] == 1;
+    final statusLabel = isWinner ? 'Winner' : isLeading ? 'Leading' : '';
 
-    return Container(
+    return Semantics(
+      label: '${candidate['position']}. ${candidate['name'] ?? 'Unknown'}, ${candidate['party'] ?? 'Independent'}. Vote share: ${candidate['voteSharePercentage']}%.${statusLabel.isNotEmpty ? ' $statusLabel.' : ''}',
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -603,13 +610,13 @@ class _CandidateCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isWinner
-              ? AppColors.green.withOpacity(0.3)
-              : AppColors.border.withOpacity(0.5),
+              ? AppColors.green.withValues(alpha: 0.3)
+              : AppColors.border.withValues(alpha: 0.5),
         ),
         boxShadow: [
           if (isWinner)
             BoxShadow(
-              color: AppColors.green.withOpacity(0.05),
+              color: AppColors.green.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -674,6 +681,7 @@ class _CandidateCard extends StatelessWidget {
           ),
         ],
       ),
+      ), // Semantics
     );
   }
 }
@@ -689,7 +697,9 @@ class _PartyResultCard extends StatelessWidget {
     final seats = party['seats'] ?? 0;
     final progress = seats / totalSeats;
 
-    return Padding(
+    return Semantics(
+      label: '${party['name'] ?? 'Unknown party'}: $seats seats out of $totalSeats total.',
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,7 +739,7 @@ class _PartyResultCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
-                        color: _getPartyColor(party['name']).withOpacity(0.3),
+                        color: _getPartyColor(party['name']).withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -741,6 +751,7 @@ class _PartyResultCard extends StatelessWidget {
           ),
         ],
       ),
+      ), // Semantics
     );
   }
 

@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { errorMiddleware } = require('./middleware/error.middleware');
+const { verifyAppCheck } = require('./middleware/appcheck.middleware');
 
 const userRoutes = require('./routes/user.routes');
 const electionRoutes = require('./routes/election.routes');
@@ -25,9 +26,13 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use(limiter);
+
+// Firebase App Check — protects all /api routes in production
+app.use('/api', verifyAppCheck);
 
 // Routes
 app.use('/api/user', userRoutes);
@@ -40,6 +45,21 @@ app.use('/api/v2/features', allFeaturesRoutes);
 app.use('/api/digilocker', digilockerRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Detailed health check — verifies DB connectivity
+app.get('/health/detailed', async (req, res) => {
+  const checks = { status: 'ok', timestamp: new Date().toISOString(), services: {} };
+  try {
+    const { query } = require('./config/postgres');
+    await query('SELECT 1');
+    checks.services.database = 'ok';
+  } catch (err) {
+    checks.services.database = 'error';
+    checks.status = 'degraded';
+  }
+  const httpStatus = checks.status === 'ok' ? 200 : 503;
+  res.status(httpStatus).json(checks);
+});
 
 // Error handler (must be last)
 app.use(errorMiddleware);

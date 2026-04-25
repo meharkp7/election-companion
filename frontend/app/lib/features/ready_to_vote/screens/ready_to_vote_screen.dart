@@ -112,7 +112,7 @@ class ReadyToVoteScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: const Row(
         children: [
@@ -130,11 +130,7 @@ class ReadyToVoteScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _enableNotifications(WidgetRef ref) async {
-    // Call backend to enable notifications
-    // ref.read(userProvider.notifier).enableNotifications();
-  }
-
+  
   Widget _buildQuickActions(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -213,15 +209,18 @@ class _QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle. Tap to navigate.',
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -229,7 +228,7 @@ class _QuickActionButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color),
@@ -260,7 +259,8 @@ class _QuickActionButton extends StatelessWidget {
             Icon(Icons.arrow_forward_ios, size: 16, color: color),
           ],
         ),
-      ),
+      ), // InkWell
+      ), // Semantics
     );
   }
 }

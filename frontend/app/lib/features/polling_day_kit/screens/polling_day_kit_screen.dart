@@ -147,7 +147,35 @@ class _PollingDayKitScreenState extends ConsumerState<PollingDayKitScreen> {
 
     if (_error != null) {
       return Scaffold(
-        body: Center(child: Text('Error: $_error')),
+        appBar: AppBar(title: const Text('Polling Day Kit')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 56, color: AppColors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'Could not load your kit',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Check your connection and try again.',
+                  style: TextStyle(fontSize: 14, color: AppColors.ink3),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                PrimaryButton(
+                  label: 'Retry',
+                  onPressed: _loadData,
+                  icon: Icons.refresh,
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -201,8 +229,8 @@ class _PollingDayKitScreenState extends ConsumerState<PollingDayKitScreen> {
                           height: 50,
                           decoration: BoxDecoration(
                             color: completion == 100
-                                ? AppColors.green.withOpacity(0.15)
-                                : AppColors.orange.withOpacity(0.15),
+                                ? AppColors.green.withValues(alpha: 0.15)
+                                : AppColors.orange.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -362,9 +390,9 @@ class _PollingDayKitScreenState extends ConsumerState<PollingDayKitScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.05),
+                  color: Colors.red.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.red.withOpacity(0.1)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
                 ),
                 child: Column(
                   children: [
@@ -437,7 +465,11 @@ class _ChecklistItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Semantics(
+      button: true,
+      checked: isChecked,
+      label: '$title. $subtitle. ${isChecked ? 'Checked' : 'Not checked yet'}. Tap to toggle.',
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => onToggle(!isChecked),
@@ -446,11 +478,11 @@ class _ChecklistItem extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color:
-                isChecked ? AppColors.green.withOpacity(0.1) : AppColors.card,
+                isChecked ? AppColors.green.withValues(alpha: 0.1) : AppColors.card,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isChecked
-                  ? AppColors.green.withOpacity(0.3)
+                  ? AppColors.green.withValues(alpha: 0.3)
                   : AppColors.border,
             ),
           ),
@@ -461,7 +493,7 @@ class _ChecklistItem extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: isChecked
-                      ? AppColors.green.withOpacity(0.1)
+                      ? AppColors.green.withValues(alpha: 0.1)
                       : AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -505,8 +537,9 @@ class _ChecklistItem extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      ), // InkWell
+      ), // Padding
+    ); // Semantics
   }
 }
 
@@ -526,7 +559,7 @@ class _SlipInfoRow extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 12,
             ),
           ),

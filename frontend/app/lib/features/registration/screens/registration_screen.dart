@@ -200,7 +200,7 @@ class _RegistrationPanel extends ConsumerWidget {
         color: AppColors.orangeLight,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: AppColors.orange.withOpacity(.2), width: 0.5),
+            color: AppColors.orange.withValues(alpha: .2), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +302,7 @@ class _DocumentHelper extends StatelessWidget {
         color: AppColors.blueLight,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: AppColors.blue.withOpacity(.15), width: 0.5),
+            color: AppColors.blue.withValues(alpha: .15), width: 0.5),
       ),
       child: Column(
         children: [
@@ -322,7 +322,7 @@ class _DocumentHelper extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.blue.withOpacity(.12),
+                  color: AppColors.blue.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -391,7 +391,7 @@ class _DocItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: confirmed
-                    ? AppColors.green.withOpacity(.3)
+                    ? AppColors.green.withValues(alpha: .3)
                     : AppColors.border,
                 width: 0.5,
               ),
@@ -441,7 +441,7 @@ class _BoothCard extends StatelessWidget {
         color: AppColors.greenLight,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: AppColors.green.withOpacity(.15), width: 0.5),
+            color: AppColors.green.withValues(alpha: .15), width: 0.5),
       ),
       child: Row(
         children: [
@@ -449,7 +449,7 @@ class _BoothCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.green.withOpacity(.15),
+              color: AppColors.green.withValues(alpha: .15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -511,7 +511,10 @@ class _IssueStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -541,7 +544,8 @@ class _IssueStrip extends StatelessWidget {
             const Icon(Icons.chevron_right, size: 18, color: AppColors.ink3),
           ],
         ),
-      ),
+      ), // GestureDetector
+      ), // Semantics
     );
   }
 }

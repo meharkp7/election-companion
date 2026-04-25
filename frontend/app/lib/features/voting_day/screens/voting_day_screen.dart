@@ -92,24 +92,40 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: Row(
-                  children: [
-                    Text(
-                      'Election Mode',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color:
-                            _electionModeOn ? AppColors.orange : AppColors.ink3,
-                        fontWeight: FontWeight.w500,
+                child: Semantics(
+                  label: 'Election Mode',
+                  hint: _electionModeOn
+                      ? 'Currently on. Tap to turn off'
+                      : 'Currently off. Tap to turn on',
+                  toggled: _electionModeOn,
+                  excludeSemantics: true,
+                  child: Row(
+                    children: [
+                      Text(
+                        'Election Mode',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _electionModeOn
+                              ? AppColors.orange
+                              : AppColors.ink3,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Switch(
-                      value: _electionModeOn,
-                      onChanged: (v) => setState(() => _electionModeOn = v),
-                      activeThumbColor: AppColors.orange,
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Switch(
+                        value: _electionModeOn,
+                        onChanged: (v) {
+                          setState(() => _electionModeOn = v);
+                          if (v) {
+                            ref
+                                .read(userProvider.notifier)
+                                .sendStep({'electionMode': true});
+                          }
+                        },
+                        activeThumbColor: AppColors.orange,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -120,95 +136,94 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Election mode banner
+                  // Election mode banner — live region announces to screen reader
                   if (_electionModeOn) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.ink,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.how_to_vote,
-                            color: AppColors.orange,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            AppStrings.electionModeOn,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                    Semantics(
+                      liveRegion: true,
+                      label: 'Election Mode is active. ${AppStrings.electionModeOn}',
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.ink,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.how_to_vote,
+                                color: AppColors.orange, size: 20),
+                            const SizedBox(width: 10),
+                            const Text(
+                              AppStrings.electionModeOn,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const Spacer(),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.orange,
-                              shape: BoxShape.circle,
+                            const Spacer(),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.orange,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
                   ],
 
                   // Required items
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.amberLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.amber.withOpacity(.2),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Carry with you',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.ink,
-                          ),
+                  Semantics(
+                    label: 'Items to carry: Voter ID or Aadhaar, Phone for reference, Water bottle',
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.amberLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.amber.withValues(alpha: .2),
+                          width: 0.5,
                         ),
-                        const SizedBox(height: 8),
-                        for (final item in [
-                          'Voter ID / Aadhaar',
-                          'Phone (for reference)',
-                          'Water bottle',
-                        ])
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_outline,
-                                  size: 14,
-                                  color: AppColors.amber,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                              ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Carry with you',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.ink,
                             ),
                           ),
-                      ],
+                          const SizedBox(height: 8),
+                          for (final item in [
+                            'Voter ID / Aadhaar',
+                            'Phone (for reference)',
+                            'Water bottle',
+                          ])
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle_outline,
+                                      size: 14, color: AppColors.amber),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    item,
+                                    style: const TextStyle(
+                                        fontSize: 13, color: AppColors.ink),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -271,9 +286,12 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
                   const SizedBox(height: 24),
 
                   // Step-by-step
-                  Text(
-                    'Step ${_currentStep + 1} of ${currentSteps.length}',
-                    style: Theme.of(context).textTheme.labelSmall,
+                  Semantics(
+                    label: 'Step ${_currentStep + 1} of ${currentSteps.length}: ${currentSteps[_currentStep].title}',
+                    child: Text(
+                      'Step ${_currentStep + 1} of ${currentSteps.length}',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Expanded(
@@ -284,8 +302,17 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
                         final step = currentSteps[i];
                         final isActive = i == _currentStep;
                         final isDone = i < _currentStep;
-                        return GestureDetector(
+                        return Semantics(
+                          button: true,
+                          selected: isActive,
+                          label: [
+                            'Step ${i + 1}: ${step.title}',
+                            if (isDone) 'Completed',
+                            if (isActive) 'Current step. ${step.detail}',
+                          ].join('. '),
                           onTap: () => setState(() => _currentStep = i),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _currentStep = i),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -297,9 +324,9 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isActive
-                                    ? AppColors.orange.withOpacity(.3)
+                                    ? AppColors.orange.withValues(alpha: .3)
                                     : isDone
-                                        ? AppColors.green.withOpacity(.3)
+                                        ? AppColors.green.withValues(alpha: .3)
                                         : AppColors.border,
                                 width: 0.5,
                               ),
@@ -312,10 +339,10 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
                                   decoration: BoxDecoration(
                                     color: isActive
                                         ? AppColors.orange
-                                            .withOpacity(.15)
+                                            .withValues(alpha: .15)
                                         : isDone
                                             ? AppColors.green
-                                                .withOpacity(.15)
+                                                .withValues(alpha: .15)
                                             : AppColors.surface,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -364,37 +391,54 @@ class _VotingDayScreenState extends ConsumerState<VotingDayScreen> {
                               ],
                             ),
                           ),
-                        );
+                          ), // GestureDetector
+                        ); // Semantics
                       },
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Navigation
+                  // Navigation buttons
                   Row(
                     children: [
                       if (_currentStep > 0)
                         Expanded(
-                          child: SecondaryButton(
-                            label: 'Previous',
-                            onPressed: () => setState(() => _currentStep--),
+                          child: Semantics(
+                            button: true,
+                            label: 'Go to previous step',
+                            child: SecondaryButton(
+                              label: 'Previous',
+                              onPressed: () =>
+                                  setState(() => _currentStep--),
+                            ),
                           ),
                         ),
                       if (_currentStep > 0) const SizedBox(width: 12),
                       Expanded(
                         flex: 2,
                         child: _currentStep < currentSteps.length - 1
-                            ? PrimaryButton(
-                                label: 'Next Step',
-                                onPressed: () => setState(() => _currentStep++),
-                                icon: Icons.arrow_forward,
+                            ? Semantics(
+                                button: true,
+                                label:
+                                    'Go to step ${_currentStep + 2}: ${currentSteps[_currentStep + 1].title}',
+                                child: PrimaryButton(
+                                  label: 'Next Step',
+                                  onPressed: () =>
+                                      setState(() => _currentStep++),
+                                  icon: Icons.arrow_forward,
+                                ),
                               )
-                            : PrimaryButton(
-                                label: 'I Have Voted! 🎉',
-                                onPressed: () {
-                                  ref.read(userProvider.notifier).markVoted();
-                                  // Shell navigates to completed screen automatically
-                                },
+                            : Semantics(
+                                button: true,
+                                label: 'Mark yourself as voted and finish',
+                                child: PrimaryButton(
+                                  label: 'I Have Voted! 🎉',
+                                  onPressed: () {
+                                    ref
+                                        .read(userProvider.notifier)
+                                        .markVoted();
+                                  },
+                                ),
                               ),
                       ),
                     ],
@@ -435,29 +479,38 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
+    return Semantics(
+      button: true,
+      label: label,
+      hint: 'Opens $label section',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: ConstrainedBox(
+          // WCAG minimum 48×48dp touch target
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
-          ],
+            child: Column(
+              children: [
+                Icon(icon, color: color, size: 24),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

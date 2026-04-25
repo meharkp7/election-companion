@@ -167,7 +167,7 @@ class _AadhaarVerificationScreenState
                             'Direct integration with UIDAI',
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.green.withOpacity(0.8),
+                              color: AppColors.green.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
@@ -180,7 +180,9 @@ class _AadhaarVerificationScreenState
 
               if (!_isOtpSent) ...[
                 // Step 1: Enter Aadhaar
-                Text(
+                Semantics(
+                  header: true,
+                  child: Text(
                   'Step 1: Enter Aadhaar Number',
                   style: TextStyle(
                     fontSize: 18,
@@ -188,18 +190,23 @@ class _AadhaarVerificationScreenState
                     color: AppColors.ink,
                   ),
                 ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Your 12-digit Aadhaar number will be used for secure e-KYC verification.',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.ink.withOpacity(0.7),
+                    color: AppColors.ink.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // Aadhaar input
-                TextField(
+                Semantics(
+                  textField: true,
+                  label: 'Aadhaar number, required. 12 digits.',
+                  hint: 'Enter your 12-digit Aadhaar number in format XXXX XXXX XXXX',
+                  child: TextField(
                   controller: _aadhaarController,
                   keyboardType: TextInputType.number,
                   maxLength: 14, // 12 digits + 2 spaces
@@ -222,7 +229,8 @@ class _AadhaarVerificationScreenState
                     ),
                     counterText: '',
                   ),
-                ),
+                ), // TextField
+                ), // Semantics
                 const SizedBox(height: 16),
 
                 // Privacy note
@@ -267,7 +275,7 @@ class _AadhaarVerificationScreenState
                   'Enter the 6-digit OTP sent to your Aadhaar-registered mobile number ($_maskedAadhaar).',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.ink.withOpacity(0.7),
+                    color: AppColors.ink.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -306,10 +314,13 @@ class _AadhaarVerificationScreenState
 
               // Error message
               if (_errorMessage != null) ...[
-                Container(
+                Semantics(
+                  liveRegion: true,
+                  label: 'Error: $_errorMessage',
+                  child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -331,7 +342,8 @@ class _AadhaarVerificationScreenState
                       ),
                     ],
                   ),
-                ),
+                ), // Container
+                ), // Semantics
                 const SizedBox(height: 16),
               ],
 

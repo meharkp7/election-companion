@@ -79,7 +79,10 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
           : _error != null
               ? _buildError()
               : _buildContent(),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: Semantics(
+        button: true,
+        label: _isReporting ? 'Submitting report, please wait' : 'Report booth status',
+        child: FloatingActionButton.extended(
         onPressed: _isReporting ? null : _showReportDialog,
         icon: _isReporting
             ? const SizedBox(
@@ -91,6 +94,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
             : const Icon(Icons.report),
         label: Text(_isReporting ? 'Submitting...' : 'Report Status'),
         backgroundColor: AppColors.orange,
+      ),
       ),
     );
   }
@@ -107,7 +111,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.ink.withOpacity(0.8),
+              color: AppColors.ink.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 24),
@@ -126,11 +130,14 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
     final queueLength = _boothData?['queueLength'] ?? 'unknown';
     final waitTime = _boothData?['waitTimeMinutes'];
     final crowdLevel = _boothData?['crowdLevel'] ?? 3;
+    // ignore: unused_local_variable
     final facilities = _boothData?['facilities'] as Map<String, dynamic>?;
+    // ignore: unused_local_variable
     final issues = _boothData?['issues'] as List<dynamic>? ?? [];
     final isPrediction = _boothData?['isPrediction'] ?? false;
     final lastUpdated = _boothData?['lastUpdated'];
 
+    // ignore: unused_local_variable
     final recommendations =
         _bestTimeData?['recommendations'] as List<dynamic>? ?? [];
 
@@ -140,11 +147,14 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Booth Header
-          Container(
+          Semantics(
+            header: true,
+            label: '$boothName, $constituency. ${isPrediction ? 'Predicted data' : 'Live data'}${lastUpdated != null ? ', updated ${_formatTimeAgo(lastUpdated)}' : ''}',
+            child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.orange, AppColors.orange.withOpacity(0.8)],
+                colors: [AppColors.orange, AppColors.orange.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -159,7 +169,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -187,7 +197,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                       Text(
                         'Updated ${_formatTimeAgo(lastUpdated)}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
                         ),
                       ),
@@ -206,23 +216,27 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                 Text(
                   constituency,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 16,
                   ),
                 ),
               ],
             ),
-          ),
+          ), // Semantics header
+          // ignore: extra_positional_arguments_could_be_named
           const SizedBox(height: 24),
 
           // Current Status Card
-          Container(
+          Semantics(
+            liveRegion: true,
+            label: 'Current queue: ${_formatQueueLength(queueLength)}${waitTime != null ? '. Estimated wait: $waitTime minutes' : ''}',
+            child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _getQueueColor(queueLength).withOpacity(0.1),
+              color: _getQueueColor(queueLength).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _getQueueColor(queueLength).withOpacity(0.3),
+                color: _getQueueColor(queueLength).withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -252,7 +266,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                     'Est. wait: $waitTime min',
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.ink.withOpacity(0.7),
+                      color: AppColors.ink.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -260,124 +274,125 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                 _buildCrowdIndicator(crowdLevel),
               ],
             ),
+          ), // Container
+        ), // Semantics liveRegion
+        const SizedBox(height: 24),
+
+        // Best Time to Vote
+        if (recommendations.isNotEmpty) ...[
+          Text(
+            'Best Time to Vote',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.ink.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...recommendations
+              .take(2)
+              .map((rec) => _buildRecommendationCard(rec)),
+          const SizedBox(height: 24),
+        ],
+
+        // Facilities Status
+        if (facilities != null) ...[
+          Text(
+            'Facilities Available',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.ink.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildFacilityChip(
+                'EVM Working',
+                facilities['evmWorking'] ?? true,
+                Icons.how_to_vote,
+              ),
+              _buildFacilityChip(
+                'Water',
+                facilities['waterAvailable'] ?? true,
+                Icons.water_drop,
+              ),
+              _buildFacilityChip(
+                'Seating',
+                facilities['seatingAvailable'] ?? false,
+                Icons.chair,
+              ),
+              _buildFacilityChip(
+                'Wheelchair Access',
+                facilities['rampAccessible'] ?? true,
+                Icons.accessible,
+              ),
+              _buildFacilityChip(
+                'Parking',
+                facilities['parkingAvailable'] ?? false,
+                Icons.local_parking,
+              ),
+            ],
           ),
           const SizedBox(height: 24),
+        ],
 
-          // Best Time to Vote
-          if (recommendations.isNotEmpty) ...[
-            Text(
-              'Best Time to Vote',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.ink.withOpacity(0.8),
-              ),
+        // Issues Reported
+        if (issues.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
             ),
-            const SizedBox(height: 12),
-            ...recommendations
-                .take(2)
-                .map((rec) => _buildRecommendationCard(rec)),
-            const SizedBox(height: 24),
-          ],
-
-          // Facilities Status
-          if (facilities != null) ...[
-            Text(
-              'Facilities Available',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.ink.withOpacity(0.8),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildFacilityChip(
-                  'EVM Working',
-                  facilities['evmWorking'] ?? true,
-                  Icons.how_to_vote,
+                Row(
+                  children: [
+                    Icon(Icons.warning_amber,
+                        color: Colors.red[700], size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Issues Reported',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red[800],
+                      ),
+                    ),
+                  ],
                 ),
-                _buildFacilityChip(
-                  'Water',
-                  facilities['waterAvailable'] ?? true,
-                  Icons.water_drop,
-                ),
-                _buildFacilityChip(
-                  'Seating',
-                  facilities['seatingAvailable'] ?? false,
-                  Icons.chair,
-                ),
-                _buildFacilityChip(
-                  'Wheelchair Access',
-                  facilities['rampAccessible'] ?? true,
-                  Icons.accessible,
-                ),
-                _buildFacilityChip(
-                  'Parking',
-                  facilities['parkingAvailable'] ?? false,
-                  Icons.local_parking,
-                ),
+                const SizedBox(height: 8),
+                ...issues.map((issue) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline,
+                              size: 16, color: Colors.red[600]),
+                          const SizedBox(width: 8),
+                          Text(
+                            issue.toString(),
+                            style: TextStyle(color: Colors.red[700]),
+                          ),
+                        ],
+                      ),
+                    )),
               ],
             ),
-            const SizedBox(height: 24),
-          ],
-
-          // Issues Reported
-          if (issues.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.warning_amber,
-                          color: Colors.red[700], size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Issues Reported',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ...issues.map((issue) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline,
-                                size: 16, color: Colors.red[600]),
-                            const SizedBox(width: 8),
-                            Text(
-                              issue.toString(),
-                              style: TextStyle(color: Colors.red[700]),
-                            ),
-                          ],
-                        ),
-                      )),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Alternative Booths
-          _buildAlternativeBoothsSection(),
-          const SizedBox(height: 40),
+          ),
+          const SizedBox(height: 24),
         ],
-      ),
-    );
+
+        // Alternative Booths
+        _buildAlternativeBoothsSection(),
+        const SizedBox(height: 40),
+      ],
+    ),
+  );
   }
 
   Widget _buildCrowdIndicator(int level) {
@@ -412,13 +427,14 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
           labels[level - 1],
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.ink.withOpacity(0.6),
+            color: AppColors.ink.withValues(alpha: 0.6),
           ),
         ),
       ],
     );
   }
 
+  // ignore: unused_element
   Widget _buildRecommendationCard(Map<String, dynamic> rec) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -426,14 +442,14 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
       decoration: BoxDecoration(
         color: AppColors.greenLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.green.withOpacity(0.3)),
+        border: Border.all(color: AppColors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.green.withOpacity(0.1),
+              color: AppColors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -457,7 +473,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                   rec['reason'] ?? 'Based on historical data',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.ink.withOpacity(0.6),
+                    color: AppColors.ink.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -484,8 +500,11 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildFacilityChip(String label, bool available, IconData icon) {
-    return Chip(
+    return Semantics(
+      label: '$label: ${available ? 'Available' : 'Not available'}',
+      child: Chip(
       avatar: Icon(
         icon,
         size: 18,
@@ -493,16 +512,18 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
       ),
       label: Text(label),
       backgroundColor: available
-          ? AppColors.green.withOpacity(0.1)
-          : Colors.red.withOpacity(0.1),
+          ? AppColors.green.withValues(alpha: 0.1)
+          : Colors.red.withValues(alpha: 0.1),
       side: BorderSide(
         color: available
-            ? AppColors.green.withOpacity(0.3)
-            : Colors.red.withOpacity(0.3),
+            ? AppColors.green.withValues(alpha: 0.3)
+            : Colors.red.withValues(alpha: 0.3),
       ),
+      ), // Chip
     );
   }
 
+  // ignore: unused_element
   Widget _buildAlternativeBoothsSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -522,7 +543,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.ink.withOpacity(0.8),
+                  color: AppColors.ink.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -532,7 +553,7 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
             'Nearby booths with shorter queues',
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.ink.withOpacity(0.6),
+              color: AppColors.ink.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 16),
@@ -632,7 +653,6 @@ class _BoothStatusScreenState extends ConsumerState<BoothStatusScreen> {
     Navigator.pop(context);
 
     try {
-      final user = ref.read(userProvider).value;
       final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
 
       if (firebaseUid == null) {

@@ -30,7 +30,7 @@ class StepOptionCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isDashed ? AppColors.border : color.withOpacity(.2),
+            color: isDashed ? AppColors.border : color.withValues(alpha: .2),
             width: isDashed ? 0.5 : 1,
             strokeAlign: BorderSide.strokeAlignInside,
           ),

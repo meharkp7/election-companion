@@ -135,7 +135,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                 gradient: LinearGradient(
                   colors: [
                     _parseColor(badge?['colors']?['bg']) ?? AppColors.orange,
-                    _parseColor(badge?['colors']?['bg'])?.withOpacity(0.8) ?? AppColors.orange.withOpacity(0.8),
+                    _parseColor(badge?['colors']?['bg'])?.withValues(alpha: 0.8) ?? AppColors.orange.withValues(alpha: 0.8),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -204,8 +204,31 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
     }
   }
 
-  Future<void> _offerRide() async {
+  Future<void> _shareBoothLocation() async {
     final user = ref.read(userProvider).value;
+    final boothName = user?.boothName ?? 'your polling booth';
+    final boothAddress = user?.boothAddress ?? '';
+    final text =
+        'My polling booth is $boothName${boothAddress.isNotEmpty ? ', $boothAddress' : ''}. '
+        'Find yours at voters.eci.gov.in 🗳️ #IndiaVotes';
+    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _inviteFriends() async {
+    const text =
+        'Use VoteReady to get step-by-step help for voting in India! '
+        'Find your booth, check your registration, and more. '
+        'Download it now 🇮🇳 #VoteReady #IndiaVotes';
+    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _offerRide() async {    final user = ref.read(userProvider).value;
     if (user == null || user.firebaseUid == null) return;
 
     setState(() => _isLoading = true);
@@ -301,7 +324,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                 gradient: LinearGradient(
                   colors: [
                     AppColors.orange,
-                    AppColors.orange.withOpacity(0.8),
+                    AppColors.orange.withValues(alpha: 0.8),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -363,7 +386,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                 gradient: LinearGradient(
                   colors: [
                     AppColors.green,
-                    AppColors.green.withOpacity(0.8),
+                    AppColors.green.withValues(alpha: 0.8),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -374,7 +397,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -396,7 +419,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                   Text(
                     'Badge: ${_iVotedRecord?['badge']?['title'] ?? 'Proud Voter'}',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 16,
                     ),
                   ),
@@ -404,7 +427,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                   Text(
                     'Voted at: ${_iVotedRecord?['formattedVoteTime'] ?? 'Today'}',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 14,
                     ),
                   ),
@@ -478,9 +501,9 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.blue.withOpacity(0.1),
+              color: AppColors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.blue.withOpacity(0.3)),
+              border: Border.all(color: AppColors.blue.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -488,7 +511,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: AppColors.blue.withOpacity(0.2),
+                    color: AppColors.blue.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -562,7 +585,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                     'Be the first to offer a ride!',
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.ink3.withOpacity(0.7),
+                      color: AppColors.ink3.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -592,7 +615,7 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
                 gradient: LinearGradient(
                   colors: [
                     AppColors.purple,
-                    AppColors.purple.withOpacity(0.8),
+                    AppColors.purple.withValues(alpha: 0.8),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -643,9 +666,9 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.green.withOpacity(0.1),
+                  color: AppColors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.green.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.green.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -709,17 +732,13 @@ class _SocialFeaturesScreenState extends ConsumerState<SocialFeaturesScreen>
             icon: Icons.share,
             title: 'Share Booth Location',
             subtitle: 'Send to family & friends',
-            onTap: () {
-              // Share booth location
-            },
+            onTap: () => _shareBoothLocation(),
           ),
           _ActionCard(
             icon: Icons.group,
             title: 'Invite Friends',
             subtitle: 'Get them to download the app',
-            onTap: () {
-              // Invite friends
-            },
+            onTap: () => _inviteFriends(),
           ),
         ],
       ),
@@ -782,7 +801,7 @@ class _CarpoolCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isOffer ? AppColors.green.withOpacity(0.2) : AppColors.blue.withOpacity(0.2),
+                  color: isOffer ? AppColors.green.withValues(alpha: 0.2) : AppColors.blue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -875,7 +894,7 @@ class _CommunityStat extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 12,
           ),
         ),
@@ -901,7 +920,10 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        label: '$title. $subtitle.',
+        child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -948,8 +970,9 @@ class _ActionCard extends StatelessWidget {
               const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
-        ),
-      ),
+        ), // Container
+        ), // InkWell
+      ), // Semantics
     );
   }
 }

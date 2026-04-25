@@ -46,17 +46,22 @@ class _AssistantShellState extends ConsumerState<AssistantShell> {
           child: ScreenRegistry.resolve(user.currentScreen),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ElectionAssistantScreen()),
-          );
-        },
-        label: const Text('Ask AI Assistant'),
-        icon: const Icon(Icons.chat_bubble_outline),
-        backgroundColor: AppColors.ink,
-        foregroundColor: Colors.white,
+      floatingActionButton: Semantics(
+        button: true,
+        label: 'Open Election AI Assistant chat',
+        hint: 'Ask questions about voting, your booth, or your rights',
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ElectionAssistantScreen()),
+            );
+          },
+          label: const Text('Ask AI Assistant'),
+          icon: const Icon(Icons.chat_bubble_outline),
+          backgroundColor: AppColors.ink,
+          foregroundColor: Colors.white,
+        ),
       ),
     );
   }

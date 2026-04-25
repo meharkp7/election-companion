@@ -59,7 +59,7 @@ class GlobalInsightsScreen extends ConsumerWidget {
                         AppStrings.globalSubtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(.5),
+                          color: Colors.white.withValues(alpha: .5),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -76,7 +76,7 @@ class GlobalInsightsScreen extends ConsumerWidget {
                         'Lok Sabha 2024',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(.5),
+                          color: Colors.white.withValues(alpha: .5),
                         ),
                       ),
                     ],
@@ -107,7 +107,7 @@ class GlobalInsightsScreen extends ConsumerWidget {
                     color: AppColors.blueLight,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.blue.withOpacity(.15),
+                      color: AppColors.blue.withValues(alpha: .15),
                       width: 0.5,
                     ),
                   ),
@@ -155,7 +155,9 @@ class _CountryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: '${row.country}: ${row.turnout.toStringAsFixed(1)}% voter turnout in ${row.year}',
+      child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -213,6 +215,7 @@ class _CountryRow extends StatelessWidget {
           ),
         ],
       ),
+    ), // Semantics
     );
   }
 }

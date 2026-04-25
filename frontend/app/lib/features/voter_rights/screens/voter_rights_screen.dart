@@ -83,7 +83,35 @@ class _VoterRightsScreenState extends ConsumerState<VoterRightsScreen>
 
     if (_error != null) {
       return Scaffold(
-        body: Center(child: Text('Error: $_error')),
+        appBar: AppBar(title: const Text('Voter Rights & Help')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 56, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'Could not load voter rights',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Check your connection and try again.',
+                  style: TextStyle(fontSize: 14, color: AppColors.ink3),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                PrimaryButton(
+                  label: 'Retry',
+                  onPressed: _loadData,
+                  icon: Icons.refresh,
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -126,9 +154,9 @@ class _VoterRightsScreenState extends ConsumerState<VoterRightsScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
             ),
             child: const Row(
               children: [
@@ -234,9 +262,9 @@ class _VoterRightsScreenState extends ConsumerState<VoterRightsScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.blue.withOpacity(0.1),
+              color: AppColors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.blue.withOpacity(0.3)),
+              border: Border.all(color: AppColors.blue.withValues(alpha: 0.3)),
             ),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,17 +350,21 @@ class _EmergencyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final steps = (guide['quickSteps'] as List<dynamic>?)?.length ?? 0;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        label: '${guide['title'] ?? 'Emergency guide'}. $steps steps to resolve. Tap for details.',
+        child: InkWell(
         onTap: () => _showGuideDetail(context, guide),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.05),
+            color: Colors.red.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red.withOpacity(0.2)),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
@@ -340,7 +372,7 @@ class _EmergencyCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.15),
+                  color: Colors.red.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -378,8 +410,9 @@ class _EmergencyCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
+        ), // Container
+        ), // InkWell
+      ), // Semantics
     );
   }
 
@@ -415,7 +448,7 @@ class _EmergencyCard extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.15),
+                    color: Colors.red.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -458,7 +491,7 @@ class _EmergencyCard extends StatelessWidget {
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: AppColors.orange.withOpacity(0.2),
+                            color: AppColors.orange.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Center(
@@ -570,7 +603,7 @@ class _RightsCard extends StatelessWidget {
                           style: const TextStyle(fontSize: 11),
                         ),
                         backgroundColor:
-                            AppColors.orange.withOpacity(0.1),
+                            AppColors.orange.withValues(alpha: 0.1),
                         side: BorderSide.none,
                       ))
                   .toList(),
@@ -600,12 +633,12 @@ class _HelplineCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isPrimary
-            ? AppColors.orange.withOpacity(0.1)
+            ? AppColors.orange.withValues(alpha: 0.1)
             : AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPrimary
-              ? AppColors.orange.withOpacity(0.3)
+              ? AppColors.orange.withValues(alpha: 0.3)
               : AppColors.border,
         ),
       ),
@@ -616,7 +649,7 @@ class _HelplineCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: isPrimary
-                  ? AppColors.orange.withOpacity(0.2)
+                  ? AppColors.orange.withValues(alpha: 0.2)
                   : AppColors.surface,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -661,6 +694,7 @@ class _HelplineCard extends StatelessWidget {
           ),
           IconButton(
             onPressed: onCall,
+            tooltip: 'Call ${helpline['name'] ?? 'helpline'} at ${helpline['phone'] ?? ''}',
             icon: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
