@@ -1,5 +1,7 @@
 const UserModel = require('../models/user.model');
 const { calculateReadinessScore } = require('../services/stateMachine.service');
+const { logVoterEvent } = require('../services/bigquery.service');
+const { sendPushNotificationAsync } = require('../services/notification.service');
 
 // POST /api/user/onboard
 const onboardUser = async (req, res, next) => {
@@ -34,6 +36,25 @@ const onboardUser = async (req, res, next) => {
       currentState: nextState,
       readinessScore: score,
     });
+
+    // Log user onboarding event asynchronously
+    logVoterEvent(firebaseUid, 'user_onboarded', {
+      state,
+      age,
+      isFirstTimeVoter,
+      currentState: nextState,
+      readinessScore: score,
+    }).catch(() => {}); // fire-and-forget
+
+    // Send welcome notification asynchronously
+    if (age >= 18) {
+      sendPushNotificationAsync(
+        firebaseUid,
+        '🎉 Welcome to VoteReady!',
+        'Let\'s get you ready to vote in the upcoming elections.',
+        { type: 'onboarding_welcome' }
+      ).catch(() => {});
+    }
 
     res.status(201).json({
       message: 'User created',
@@ -74,6 +95,13 @@ const updateNotifications = async (req, res, next) => {
       notificationsEnabled: req.body.enabled,
     });
 
+    // Log notification preference change
+    logVoterEvent(req.params.firebaseUid, 'notifications_updated', {
+      enabled: req.body.enabled,
+      state: user.state,
+      currentState: user.currentState,
+    }).catch(() => {});
+
     res.json({ user: updated });
 
   } catch (err) {
@@ -98,6 +126,14 @@ const updateBooth = async (req, res, next) => {
     user = await UserModel.update(user.id, {
       readinessScore: score,
     });
+
+    // Log booth update event
+    logVoterEvent(firebaseUid, 'booth_updated', {
+      state: user.state,
+      currentState: user.currentState,
+      readinessScore: score,
+      boothKnown: !!boothDetails,
+    }).catch(() => {});
 
     res.json({ user });
 

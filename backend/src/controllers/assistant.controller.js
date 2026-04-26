@@ -32,14 +32,8 @@ const nextStep = async (req, res, next) => {
 
     const result = await transition(user.id, input);
 
-    // Log state transition to BigQuery for analytics
-    logVoterEvent(firebaseUid, `state_${result.currentState.toLowerCase()}`, {
-      state: result.user?.state,
-      age: result.user?.age,
-      isFirstTimeVoter: result.user?.isFirstTimeVoter,
-      currentState: result.currentState,
-      readinessScore: result.user?.readinessScore,
-    }).catch(() => {}); // fire-and-forget
+    // Cloud Tasks now handles analytics and notifications automatically
+    // No need for direct BigQuery calls here anymore! 🔥
 
     // Log to Cloud Logging for operational visibility
     log.info('state_transition', {

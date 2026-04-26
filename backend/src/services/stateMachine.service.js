@@ -1,6 +1,6 @@
 // services/stateMachine.service.js
 // Full rewrite: PostgreSQL instead of Mongoose
-
+const cloudTasks = require('./cloudTasks.service');
 const UserModel = require('../models/user.model');
 const StateLogModel = require('../models/state.model');
 
@@ -13,6 +13,15 @@ const calculateReadinessScore = (user) => {
   if (user.boothKnown) score += 15;
   if (user.currentState === 'READY_TO_VOTE' || user.currentState === 'VOTING_DAY') score += 10;
   return Math.min(score, 100);
+};
+
+// ─── Age group helper for analytics ─────────────────────────────────────────
+const _ageGroup = (age) => {
+  if (age < 25) return '18-24';
+  if (age < 35) return '25-34';
+  if (age < 45) return '35-44';
+  if (age < 60) return '45-59';
+  return '60+';
 };
 
 // ─── Core transition logic ──────────────────────────────────────────────────
@@ -145,6 +154,64 @@ const transition = async (userId, input) => {
       trigger: input.trigger || 'user_action',
       meta: input,
     });
+
+    // 🔥 TRIGGER CLOUD TASKS FOR ASYNC PROCESSING
+    try {
+      // Queue analytics event for BigQuery
+      await cloudTasks.enqueueAnalyticsBatch([{
+        event_id: `${user.firebaseUid}_state_${result.state.toLowerCase()}_${Date.now()}`,
+        firebase_uid: user.firebaseUid,
+        event_type: `state_${result.state.toLowerCase()}`,
+        state: updatedUser.state,
+        age_group: updatedUser.age ? _ageGroup(updatedUser.age) : null,
+        is_first_time_voter: updatedUser.isFirstTimeVoter,
+        current_state: result.state,
+        readiness_score: updatedUser.readinessScore,
+        metadata: JSON.stringify({
+          fromState,
+          trigger: input.trigger || 'user_action',
+          inputData: input
+        }),
+        timestamp: new Date().toISOString(),
+      }]);
+
+      // Queue notification for important state changes
+      if (['READY_TO_VOTE', 'VOTING_DAY', 'COMPLETED'].includes(result.state)) {
+        const notificationMessages = {
+          'READY_TO_VOTE': {
+            title: '🎉 You\'re Vote-Ready!',
+            body: 'All set for election day. We\'ll remind you when it\'s time to vote!'
+          },
+          'VOTING_DAY': {
+            title: '🗳️ Today is Election Day!',
+            body: 'Time to vote! Head to your polling booth now.'
+          },
+          'COMPLETED': {
+            title: '🏆 Thank You for Voting!',
+            body: 'Your vote matters! Thanks for participating in democracy.'
+          }
+        };
+
+        const notification = notificationMessages[result.state];
+        if (notification) {
+          await cloudTasks.enqueueNotification(
+            user.firebaseUid,
+            notification.title,
+            notification.body,
+            { 
+              type: 'state_change',
+              state: result.state,
+              readinessScore: updatedUser.readinessScore
+            }
+          );
+        }
+      }
+
+      console.log(`🔥 Cloud Tasks triggered for state: ${fromState} → ${result.state}`);
+    } catch (taskError) {
+      // Don't fail the transition if Cloud Tasks fails
+      console.error('❌ Cloud Task failed (non-critical):', taskError.message);
+    }
 
     return {
       success: true,

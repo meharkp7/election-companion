@@ -1,5 +1,6 @@
 const admin = require('../config/firebase');
 const { query } = require('../config/postgres');
+const { enqueueNotification } = require('./cloudTasks.service');
 
 const sendPushNotification = async (firebaseUid, title, body, data = {}) => {
   try {
@@ -19,6 +20,18 @@ const sendPushNotification = async (firebaseUid, title, body, data = {}) => {
   }
 };
 
+const sendPushNotificationAsync = async (firebaseUid, title, body, data = {}) => {
+  try {
+    // Use Cloud Tasks for async notification delivery
+    await enqueueNotification(firebaseUid, title, body, data);
+    console.log(`📲 Notification queued for ${firebaseUid}`);
+  } catch (err) {
+    console.error('Notification queue error:', err.message);
+    // Fallback to direct send if Cloud Tasks fails
+    await sendPushNotification(firebaseUid, title, body, data);
+  }
+};
+
 const notifyIncompleteUsers = async () => {
   try {
     const rows = await query(
@@ -34,11 +47,11 @@ const notifyIncompleteUsers = async () => {
         VERIFICATION: { title: '✅ Verify your details', body: 'One step left before you\'re ready to vote!' },
       };
       const msg = messages[user.current_state];
-      if (msg) await sendPushNotification(user.firebase_uid, msg.title, msg.body);
+      if (msg) await sendPushNotificationAsync(user.firebase_uid, msg.title, msg.body);
     }
   } catch (err) {
     console.error('Error notifying incomplete users:', err.message);
   }
 };
 
-module.exports = { sendPushNotification, notifyIncompleteUsers };
+module.exports = { sendPushNotification, sendPushNotificationAsync, notifyIncompleteUsers };

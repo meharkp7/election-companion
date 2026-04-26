@@ -3,6 +3,8 @@
 
 const { query } = require('../config/postgres');
 const { generateText } = require('../config/vertexai');
+const { enqueueDocumentProcessing } = require('./cloudTasks.service');
+const { logVoterEvent } = require('./bigquery.service');
 
 // ==========================================
 // VERIFICATION LEVELS
@@ -27,10 +29,11 @@ const VERIFICATION_STATUS = {
 
 /**
  * Process document upload with AI-powered OCR using Vertex AI
+ * Uses Cloud Tasks for async processing to improve response times
  */
 async function processDocumentUpload(userId, documentType, imageUrls) {
   try {
-    // Create document record
+    // Create document record with pending status
     const docResult = await query(
       `INSERT INTO verification_documents 
        (user_id, document_type, front_image_url, back_image_url, verification_result)
@@ -40,40 +43,110 @@ async function processDocumentUpload(userId, documentType, imageUrls) {
     );
     
     const document = docResult[0];
-    
-    // Perform OCR using Vertex AI Gemini
-    const ocrResult = await performOCROnDocument(documentType, imageUrls);
-    
-    // Update document with OCR results
-    await query(
-      `UPDATE verification_documents 
-       SET ocr_raw_data = $1, 
-           ocr_confidence = $2,
-           verification_result = $3,
-           updated_at = NOW()
-       WHERE id = $4`,
-      [
-        JSON.stringify(ocrResult.extractedData),
-        ocrResult.confidence,
-        ocrResult.confidence > 0.85 ? 'approved' : 'flagged',
-        document.id
-      ]
-    );
-    
-    // Update user's verification status
-    await updateUserVerificationStatus(userId);
+
+    // Get user for analytics
+    const userResult = await query('SELECT firebase_uid FROM users WHERE id = $1', [userId]);
+    const firebaseUid = userResult[0]?.firebase_uid;
+
+    // Queue document processing asynchronously
+    try {
+      await enqueueDocumentProcessing(firebaseUid, imageUrls.front, documentType);
+      console.log(`📄 Document processing queued for user ${userId}`);
+    } catch (err) {
+      console.warn('Failed to queue document processing, falling back to sync:', err.message);
+      // Fallback to synchronous processing
+      const ocrResult = await performOCROnDocument(documentType, imageUrls);
+      await updateDocumentWithOCRResults(document.id, ocrResult);
+      await updateUserVerificationStatus(userId);
+    }
+
+    // Log document upload event
+    if (firebaseUid) {
+      logVoterEvent(firebaseUid, 'document_uploaded', {
+        documentType,
+        documentId: document.id,
+      }).catch(() => {});
+    }
     
     return {
       documentId: document.id,
-      extractedData: ocrResult.extractedData,
-      confidence: ocrResult.confidence,
-      status: ocrResult.confidence > 0.85 ? 'approved' : 'flagged',
+      status: 'processing',
+      message: 'Document uploaded successfully. Processing in background.',
     };
     
   } catch (error) {
     console.error('Document upload processing failed:', error);
     throw error;
   }
+}
+
+/**
+ * Process document synchronously (called by Cloud Tasks worker)
+ */
+async function processDocumentSync(firebaseUid, fileUrl, documentType) {
+  try {
+    // Get user ID from firebase UID
+    const userResult = await query('SELECT id FROM users WHERE firebase_uid = $1', [firebaseUid]);
+    if (userResult.length === 0) {
+      throw new Error('User not found');
+    }
+    const userId = userResult[0].id;
+
+    // Find the document record
+    const docResult = await query(
+      'SELECT * FROM verification_documents WHERE user_id = $1 AND document_type = $2 AND front_image_url = $3 ORDER BY created_at DESC LIMIT 1',
+      [userId, documentType, fileUrl]
+    );
+
+    if (docResult.length === 0) {
+      throw new Error('Document record not found');
+    }
+
+    const document = docResult[0];
+
+    // Perform OCR
+    const ocrResult = await performOCROnDocument(documentType, { front: fileUrl });
+    
+    // Update document with results
+    await updateDocumentWithOCRResults(document.id, ocrResult);
+    
+    // Update user verification status
+    await updateUserVerificationStatus(userId);
+
+    // Log completion
+    logVoterEvent(firebaseUid, 'document_processed', {
+      documentType,
+      documentId: document.id,
+      confidence: ocrResult.confidence,
+      isValid: ocrResult.confidence > 0.85,
+    }).catch(() => {});
+
+    console.log(`✅ Document processing completed for user ${firebaseUid}`);
+    
+  } catch (error) {
+    console.error('Sync document processing failed:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update document record with OCR results
+ */
+async function updateDocumentWithOCRResults(documentId, ocrResult) {
+  await query(
+    `UPDATE verification_documents 
+     SET ocr_raw_data = $1, 
+         ocr_confidence = $2,
+         verification_result = $3,
+         updated_at = NOW()
+     WHERE id = $4`,
+    [
+      JSON.stringify(ocrResult.extractedData),
+      ocrResult.confidence,
+      ocrResult.confidence > 0.85 ? 'approved' : 'flagged',
+      documentId
+    ]
+  );
 }
 
 /**
@@ -197,6 +270,15 @@ async function initiateAadhaarEKYC(userId, aadhaarNumber) {
        WHERE user_id = $2`,
       [mockTransactionId, userId]
     );
+
+    // Log Aadhaar initiation event
+    const userResult = await query('SELECT firebase_uid FROM users WHERE id = $1', [userId]);
+    const firebaseUid = userResult[0]?.firebase_uid;
+    if (firebaseUid) {
+      logVoterEvent(firebaseUid, 'aadhaar_ekyc_initiated', {
+        maskedAadhaar: maskedNumber,
+      }).catch(() => {});
+    }
     
     return {
       transactionId: mockTransactionId,
@@ -276,6 +358,16 @@ async function verifyAadhaarOTP(userId, otp) {
        WHERE id = $1`,
       [userId]
     );
+
+    // Log successful verification
+    const userResult = await query('SELECT firebase_uid FROM users WHERE id = $1', [userId]);
+    const firebaseUid = userResult[0]?.firebase_uid;
+    if (firebaseUid) {
+      logVoterEvent(firebaseUid, 'aadhaar_ekyc_completed', {
+        success: true,
+        verificationLevel: 3,
+      }).catch(() => {});
+    }
     
     return {
       success: true,
@@ -491,7 +583,9 @@ async function updateUserVerificationStatus(userId) {
 module.exports = {
   // Document upload
   processDocumentUpload,
+  processDocumentSync,
   performOCROnDocument,
+  updateDocumentWithOCRResults,
   
   // Aadhaar E-KYC
   initiateAadhaarEKYC,

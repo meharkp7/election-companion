@@ -24,6 +24,7 @@ jest.mock('@google-cloud/bigquery', () => ({
 const {
   logVoterEvent,
   logAIInteraction,
+  logElectionMetric,
   queryTurnoutStats,
   isBigQueryConfigured,
 } = require('../src/services/bigquery.service');
@@ -86,6 +87,33 @@ describe('BigQueryService', () => {
       const result = await queryTurnoutStats();
       expect(result).toHaveProperty('note');
       expect(result.data).toEqual([]);
+    });
+  });
+
+  describe('logElectionMetric (mock path)', () => {
+    it('resolves without throwing for a valid metric', async () => {
+      await expect(
+        logElectionMetric('Delhi', 'hourly_snapshot', {
+          totalUsers: 1000,
+          votedUsers: 600,
+          turnoutPercent: '60.0',
+          avgReadiness: 72.5,
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('resolves without throwing when data is empty', async () => {
+      await expect(logElectionMetric('ALL', 'phase_complete', {})).resolves.toBeUndefined();
+    });
+
+    it('handles null/undefined state gracefully', async () => {
+      await expect(logElectionMetric(null, 'test_metric', {})).resolves.toBeUndefined();
+    });
+
+    it('includes phaseNumber when provided', async () => {
+      await expect(
+        logElectionMetric('Maharashtra', 'phase_complete', { phaseNumber: 3, value: 55.2 }),
+      ).resolves.toBeUndefined();
     });
   });
 });

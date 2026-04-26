@@ -7,14 +7,20 @@
  * Dataset: vote_ready_analytics
  * Tables:
  *   - voter_events       : user journey events (onboard, verify, vote)
- *   - election_metrics   : turnout, phase-wise stats
+ *   - election_metrics   : turnout, phase-wise stats per state/phase
  *   - ai_interactions    : assistant queries and response quality
  */
 
 const { BigQuery } = require('@google-cloud/bigquery');
+const { enqueueAnalyticsBatch } = require('./cloudTasks.service');
 
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT_ID;
 const DATASET_ID = process.env.BIGQUERY_DATASET_ID || 'vote_ready_analytics';
+
+// In-memory batch for analytics events
+let eventBatch = [];
+const BATCH_SIZE = 10;
+const BATCH_TIMEOUT = 30000; // 30 seconds
 
 // Only initialise if project is configured
 const isBigQueryConfigured = () =>
@@ -58,6 +64,20 @@ const AI_INTERACTIONS_SCHEMA = [
   { name: 'timestamp',      type: 'TIMESTAMP', mode: 'REQUIRED' },
 ];
 
+const ELECTION_METRICS_SCHEMA = [
+  { name: 'metric_id',       type: 'STRING',    mode: 'REQUIRED' },
+  { name: 'state',           type: 'STRING',    mode: 'REQUIRED' },
+  { name: 'phase_number',    type: 'INTEGER',   mode: 'NULLABLE' },
+  { name: 'metric_type',     type: 'STRING',    mode: 'REQUIRED' },
+  { name: 'value',           type: 'FLOAT',     mode: 'NULLABLE' },
+  { name: 'total_users',     type: 'INTEGER',   mode: 'NULLABLE' },
+  { name: 'voted_users',     type: 'INTEGER',   mode: 'NULLABLE' },
+  { name: 'turnout_percent', type: 'FLOAT',     mode: 'NULLABLE' },
+  { name: 'avg_readiness',   type: 'FLOAT',     mode: 'NULLABLE' },
+  { name: 'metadata',        type: 'JSON',      mode: 'NULLABLE' },
+  { name: 'recorded_at',     type: 'TIMESTAMP', mode: 'REQUIRED' },
+];
+
 // ── Ensure dataset and tables exist ────────────────────────────────────────
 
 async function ensureDatasetExists() {
@@ -84,13 +104,39 @@ async function ensureTableExists(tableId, schema) {
 
 /**
  * Log a voter journey event to BigQuery.
- * Falls back to console.log when BigQuery is not configured.
+ * Uses Cloud Tasks for batched processing to improve performance.
  *
  * @param {string} firebaseUid
  * @param {string} eventType  e.g. 'onboarded', 'verified', 'voted'
  * @param {object} context    Additional fields (state, age, currentState, etc.)
  */
 async function logVoterEvent(firebaseUid, eventType, context = {}) {
+  const event = {
+    firebaseUid,
+    eventType,
+    context,
+    timestamp: new Date().toISOString(),
+  };
+
+  // Add to batch
+  eventBatch.push(event);
+
+  // Send batch if it's full
+  if (eventBatch.length >= BATCH_SIZE) {
+    await flushEventBatch();
+  }
+
+  // Set timeout to flush batch if it's not full
+  if (eventBatch.length === 1) {
+    setTimeout(flushEventBatch, BATCH_TIMEOUT);
+  }
+}
+
+/**
+ * Log a voter journey event directly to BigQuery (synchronous).
+ * Use this for critical events that need immediate processing.
+ */
+async function logVoterEventSync(firebaseUid, eventType, context = {}) {
   const row = {
     event_id: `${firebaseUid}_${eventType}_${Date.now()}`,
     firebase_uid: firebaseUid,
@@ -118,6 +164,41 @@ async function logVoterEvent(firebaseUid, eventType, context = {}) {
 }
 
 /**
+ * Flush the current event batch to Cloud Tasks
+ */
+async function flushEventBatch() {
+  if (eventBatch.length === 0) return;
+
+  const batch = [...eventBatch];
+  eventBatch = [];
+
+  try {
+    // Convert events to BigQuery format
+    const formattedEvents = batch.map(event => ({
+      event_id: `${event.firebaseUid}_${event.eventType}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      firebase_uid: event.firebaseUid,
+      event_type: event.eventType,
+      state: event.context.state ?? null,
+      age_group: event.context.age ? _ageGroup(event.context.age) : null,
+      is_first_time_voter: event.context.isFirstTimeVoter ?? null,
+      current_state: event.context.currentState ?? null,
+      readiness_score: event.context.readinessScore ?? null,
+      metadata: event.context.metadata ? JSON.stringify(event.context.metadata) : null,
+      timestamp: event.timestamp,
+    }));
+
+    await enqueueAnalyticsBatch(formattedEvents);
+    console.log(`📊 Queued ${batch.length} analytics events`);
+  } catch (err) {
+    console.error('Failed to queue analytics batch:', err.message);
+    // Fallback: try direct insert for critical events
+    for (const event of batch) {
+      await logVoterEventSync(event.firebaseUid, event.eventType, event.context).catch(() => {});
+    }
+  }
+}
+
+/**
  * Log an AI assistant interaction.
  */
 async function logAIInteraction(firebaseUid, question, responseLength, latencyMs) {
@@ -140,6 +221,41 @@ async function logAIInteraction(firebaseUid, question, responseLength, latencyMs
     await table('ai_interactions').insert([row]);
   } catch (err) {
     console.error('BigQuery insert error (ai_interactions):', err.message);
+  }
+}
+
+/**
+ * Log an election metric snapshot (turnout, readiness, phase stats).
+ * Used by the hourly stats job to track trends over time.
+ *
+ * @param {string} state          Indian state name
+ * @param {string} metricType     e.g. 'hourly_snapshot', 'phase_complete'
+ * @param {object} data           { totalUsers, votedUsers, turnoutPercent, avgReadiness, phaseNumber? }
+ */
+async function logElectionMetric(state, metricType, data = {}) {
+  const row = {
+    metric_id:       `metric_${state}_${metricType}_${Date.now()}`,
+    state:           state || 'ALL',
+    phase_number:    data.phaseNumber ?? null,
+    metric_type:     metricType,
+    value:           data.value ?? null,
+    total_users:     data.totalUsers ?? null,
+    voted_users:     data.votedUsers ?? null,
+    turnout_percent: data.turnoutPercent ? parseFloat(data.turnoutPercent) : null,
+    avg_readiness:   data.avgReadiness ?? null,
+    metadata:        data.metadata ? JSON.stringify(data.metadata) : null,
+    recorded_at:     new Date().toISOString(),
+  };
+
+  if (!bigquery) {
+    console.log('[BigQuery mock] election_metric:', JSON.stringify(row));
+    return;
+  }
+
+  try {
+    await table('election_metrics').insert([row]);
+  } catch (err) {
+    console.error('BigQuery insert error (election_metrics):', err.message);
   }
 }
 
@@ -180,6 +296,7 @@ async function initBigQuery() {
     await ensureDatasetExists();
     await ensureTableExists('voter_events', VOTER_EVENTS_SCHEMA);
     await ensureTableExists('ai_interactions', AI_INTERACTIONS_SCHEMA);
+    await ensureTableExists('election_metrics', ELECTION_METRICS_SCHEMA);
     console.log('✅ BigQuery tables ready');
   } catch (err) {
     console.warn('BigQuery init warning:', err.message);
@@ -198,8 +315,11 @@ function _ageGroup(age) {
 
 module.exports = {
   logVoterEvent,
+  logVoterEventSync,
   logAIInteraction,
+  logElectionMetric,
   queryTurnoutStats,
   initBigQuery,
   isBigQueryConfigured,
+  flushEventBatch,
 };

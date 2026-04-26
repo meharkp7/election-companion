@@ -11,7 +11,12 @@ class UserNotifier extends Notifier<AsyncValue<User>> {
   @override
   AsyncValue<User> build() {
     _initializeUser();
-    Future.microtask(() => fetchCurrentStep());
+    // Only restore backend state if a Firebase user is already signed in.
+    // New / unauthenticated users must go through onboarding first.
+    final fbUser = fb.FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      Future.microtask(() => fetchCurrentStep());
+    }
     return const AsyncValue.loading();
   }
 
@@ -27,14 +32,20 @@ class UserNotifier extends Notifier<AsyncValue<User>> {
 
   void _initializeUser() {
     try {
-      final uid = _getFirebaseUid();
-      state = AsyncValue.data(const User(
+      final fbUser = fb.FirebaseAuth.instance.currentUser;
+      final uid = fbUser?.uid ?? 'dev_user_placeholder';
+
+      // If no authenticated user, land on onboarding immediately (no loading).
+      // If authenticated, we'll overwrite this with the real backend state
+      // once fetchCurrentStep() completes.
+      state = AsyncValue.data(User(
+        firebaseUid: uid,
         age: 0,
         state: '',
         isFirstTimeVoter: false,
         currentState: 'START',
         readinessScore: 0,
-      ).copyWith(firebaseUid: uid));
+      ));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -195,5 +206,18 @@ class UserNotifier extends Notifier<AsyncValue<User>> {
   /// Direct user object update (for local-only changes).
   void updateUser(User user) {
     state = AsyncValue.data(user);
+  }
+
+  /// Reset the user journey back to START (used by restart/logout flows).
+  void resetToStart() {
+    final uid = state.value?.firebaseUid ?? _getFirebaseUid();
+    state = AsyncValue.data(User(
+      firebaseUid: uid,
+      age: 0,
+      state: '',
+      isFirstTimeVoter: false,
+      currentState: 'START',
+      readinessScore: 0,
+    ));
   }
 }
